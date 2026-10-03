@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>APEDA Exporter's Directory (unofficial search)</title>
+<style>
+  :root{
+    --ink:#1c2b24; --sub:#5b6b62; --line:#d9e2dc; --bg:#f6f8f5; --panel:#ffffff;
+    --accent:#1f7a4d; --accent-dark:#155a38; --accent-soft:#e5f3ec;
+    --warn-bg:#fdf3e6; --warn-ink:#7a4a12;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding:24px 20px 60px}
+  .wrap{max-width:1120px;margin:0 auto}
+  header{margin-bottom:20px}
+  h1{font-size:1.5rem;margin:0 0 4px;letter-spacing:-0.01em}
+  .tagline{color:var(--sub);font-size:.92rem;margin:0}
+  .source{color:var(--sub);font-size:.8rem;margin-top:6px}
+  .source a{color:var(--accent-dark)}
+
+  .note{background:var(--warn-bg);color:var(--warn-ink);border:1px solid #f0d9b5;
+    border-radius:10px;padding:12px 14px;font-size:.85rem;margin:16px 0 20px;line-height:1.5}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+
+  form#filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:end}
+  .field{display:flex;flex-direction:column;gap:5px;min-width:0}
+  .field label{font-size:.75rem;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.04em}
+  .field .hint{font-size:.72rem;color:var(--sub);font-weight:400;text-transform:none;letter-spacing:0}
+  select,input[type=text]{
+    font:inherit;font-size:.9rem;padding:9px 10px;border-radius:8px;border:1px solid var(--line);
+    background:#fff;color:var(--ink);width:100%
+  }
+  select:focus,input:focus{outline:2px solid var(--accent);outline-offset:1px}
+  .actions{grid-column:1/-1;display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:4px}
+  button{font:inherit;font-size:.88rem;font-weight:600;border-radius:8px;border:1px solid transparent;
+    padding:10px 18px;cursor:pointer}
+  #searchBtn{background:var(--accent);color:#fff}
+  #searchBtn:hover{background:var(--accent-dark)}
+  #searchBtn:disabled{background:#a9c6b6;cursor:progress}
+  #exportBtn{background:#fff;border-color:var(--line);color:var(--ink)}
+  #exportBtn:hover{border-color:var(--accent)}
+  #exportBtn:disabled{opacity:.45;cursor:not-allowed}
+  #status{font-size:.85rem;color:var(--sub)}
+
+  .results{margin-top:22px}
+  .results-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;gap:12px;flex-wrap:wrap}
+  .results-head h2{font-size:1rem;margin:0}
+  .count-pill{background:var(--accent-soft);color:var(--accent-dark);border-radius:999px;padding:3px 10px;font-size:.78rem;font-weight:600}
+
+  .table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+  table{border-collapse:collapse;width:100%;min-width:920px;background:#fff;font-size:.86rem}
+  thead th{position:sticky;top:0;background:var(--accent-soft);color:var(--accent-dark);
+    text-align:left;padding:10px 12px;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;
+    border-bottom:1px solid var(--line)}
+  tbody td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:#fafcfb}
+  td.num{color:var(--sub);font-variant-numeric:tabular-nums;width:36px}
+  .exp-name{font-weight:600}
+  .exp-status{display:inline-block;margin-top:3px;font-size:.72rem;color:var(--accent-dark);
+    background:var(--accent-soft);border-radius:6px;padding:1px 6px}
+  .muted{color:var(--sub)}
+  .empty,.error{padding:30px 10px;text-align:center;color:var(--sub);font-size:.9rem}
+  .error{color:#9a3324}
+
+  footer{margin-top:28px;font-size:.78rem;color:var(--sub);line-height:1.6}
+
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ink:#e8efe9; --sub:#93a49b; --line:#2a3630; --bg:#121a15; --panel:#182019;
+      --accent:#3fb579; --accent-dark:#6ed6a1; --accent-soft:#1c2f24;
+      --warn-bg:#2b220f; --warn-ink:#e0b571;
+    }
+    select,input[type=text]{background:#101713;color:var(--ink)}
+    thead th{background:#1c2f24}
+    #exportBtn{background:#182019}
+    tbody tr:hover{background:#141c17}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>APEDA Exporter's Directory</h1>
+    <p class="tagline">Search India's APEDA-registered agri-food exporters by state, product and exporter type.</p>
+    <p class="source">Live data from APEDA's own directory backend, queried server-side by this tool &middot;
+      source page: <a href="https://apeda.gov.in/exporter-directory" target="_blank" rel="noopener">apeda.gov.in/exporter-directory</a> (unofficial mirror, not affiliated with APEDA)</p>
+  </header>
+
+  <div class="note">
+    <strong>Data limits, read before filtering:</strong> APEDA's directory has no nationwide search — a
+    <strong>state is required</strong>. It also has no official district field (only city/pincode) and no
+    exporter-website field (only email/mobile) &mdash; so "District" below is a free-text match against each
+    exporter's city and address, and there is no website column to filter or show.
+  </div>
+
+  <form id="filters" class="panel">
+    <div class="field">
+      <label for="state">State <span class="hint">(required)</span></label>
+      <select id="state" required>
+        <option value="">Select state&hellip;</option>
+        {% for s in states %}
+        <option value="{{ s.code }}">{{ s.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="product">Product</label>
+      <select id="product">
+        {% for p in products %}
+        <option value="{{ p.productID }}">{{ p.productName }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="type">Exporter type</label>
+      <select id="type">
+        {% for t in exporter_types %}
+        <option value="{{ t.code }}">{{ t.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="name">Exporter name</label>
+      <input type="text" id="name" placeholder="e.g. Tata, Allanasons&hellip;">
+    </div>
+
+    <div class="field">
+      <label for="district">City / district <span class="hint">(free text)</span></label>
+      <input type="text" id="district" placeholder="e.g. Nagpur, Kochi&hellip;">
+    </div>
+
+    <div class="actions">
+      <button type="submit" id="searchBtn">Search</button>
+      <button type="button" id="exportBtn" disabled>Export CSV</button>
+      <span id="status"></span>
+    </div>
+  </form>
+
+  <section class="results">
+    <div class="results-head">
+      <h2>Results</h2>
+      <span id="countPill" class="count-pill" hidden></span>
+    </div>
+    <div id="resultsBody">
+      <div class="empty">Pick a state above and hit Search — results load straight from APEDA's live directory.</div>
+    </div>
+  </section>
+
+  <footer>
+    Fields shown come directly from APEDA's registered-exporter records: exporter name, key person, address,
+    city, state, pincode, email, mobile, exporter type/status, and total registered export quantity &amp; value
+    (all-time, across all products, not specific to the selected product filter). This tool runs locally and
+    makes no changes to APEDA's data.
+  </footer>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const form = $('filters');
+const searchBtn = $('searchBtn');
+const exportBtn = $('exportBtn');
+const status = $('status');
+const resultsBody = $('resultsBody');
+const countPill = $('countPill');
+let lastRows = [];
+let lastLabel = '';
+
+function esc(s){
+  return (s ?? '').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function fmtNum(n){
+  if (n === null || n === undefined || n === '') return '';
+  const v = Number(n);
+  if (Number.isNaN(v)) return '';
+  return v.toLocaleString('en-IN', {maximumFractionDigits: 2});
+}
+
+function renderRows(rows){
+  if (!rows.length){
+    resultsBody.innerHTML = '<div class="empty">No exporters matched these filters.</div>';
+    return;
+  }
+  const trs = rows.map((r, i) => `
+    <tr>
+      <td class="num">${i + 1}</td>
+      <td>
+        <div class="exp-name">${esc(r.exporter_name)}</div>
+        ${r.keyPerson ? `<div class="muted">${esc(r.keyPerson)}</div>` : ''}
+        ${r.expStatus ? `<span class="exp-status">${esc(r.expStatus)}</span>` : ''}
+      </td>
+      <td>${esc(r.address)}</td>
+      <td>${esc(r.city)}</td>
+      <td>${esc(r.pin)}</td>
+      <td>${r.email ? `<a href="mailto:${esc(r.email)}">${esc(r.email)}</a>` : ''}</td>
+      <td>${esc(r.mobile)}</td>
+      <td>${esc(r.expType)}</td>
+      <td class="num">${fmtNum(r.qtyinMT)}</td>
+      <td class="num">${fmtNum(r.valueinRsCrore)}</td>
+    </tr>`).join('');
+
+  resultsBody.innerHTML = `
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Exporter</th><th>Address</th><th>City</th><th>Pincode</th>
+            <th>Email</th><th>Mobile</th><th>Type</th>
+            <th>Qty (MT)</th><th>Value (&#8377; Cr)</th>
+          </tr>
+        </thead>
+        <tbody>${trs}</tbody>
+      </table>
+    </div>`;
+}
+
+async function runSearch(e){
+  e.preventDefault();
+  const state = $('state').value;
+  if (!state){
+    status.textContent = 'Select a state first.';
+    $('state').focus();
+    return;
+  }
+  const params = new URLSearchParams({
+    state,
+    product: $('product').value,
+    type: $('type').value,
+    name: $('name').value.trim(),
+    district: $('district').value.trim(),
+  });
+
+  searchBtn.disabled = true;
+  exportBtn.disabled = true;
+  status.textContent = 'Searching APEDA’s live directory…';
+  resultsBody.innerHTML = '<div class="empty">Loading&hellip;</div>';
+  countPill.hidden = true;
+
+  try{
+    const res = await fetch('/api/search?' + params.toString());
+    const data = await res.json();
+    if (!res.ok){
+      resultsBody.innerHTML = `<div class="error">${esc(data.error || 'Search failed.')}</div>`;
+      status.textContent = '';
+      return;
+    }
+    lastRows = data.results;
+    lastLabel = $('state').selectedOptions[0].textContent;
+    renderRows(lastRows);
+    countPill.hidden = false;
+    countPill.textContent = `${data.count} exporter${data.count === 1 ? '' : 's'}`;
+    exportBtn.disabled = data.count === 0;
+    status.textContent = '';
+  } catch(err){
+    resultsBody.innerHTML = `<div class="error">Could not reach the local server: ${esc(err.message)}</div>`;
+  } finally {
+    searchBtn.disabled = false;
+  }
+}
+
+function exportCsv(){
+  if (!lastRows.length) return;
+  const cols = ['exporter_name','keyPerson','address','city','state','pin','email','mobile','expType','expStatus','qtyinMT','valueinRsCrore'];
+  const header = ['Exporter Name','Key Person','Address','City','State','Pincode','Email','Mobile','Type','Status','Qty (MT)','Value (Rs Cr)'];
+  const csvEscape = (v) => {
+    const s = (v ?? '').toString();
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  const lines = [header.join(',')].concat(
+    lastRows.map(r => cols.map(c => csvEscape(r[c])).join(','))
+  );
+  const blob = new Blob([lines.join('\n')], {type: 'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const safeLabel = lastLabel.replace(/[^a-z0-9]+/gi, '_');
+  a.href = url;
+  a.download = `apeda_exporters_${safeLabel}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+form.addEventListener('submit', runSearch);
+exportBtn.addEventListener('click', exportCsv);
+</script>
+</body>
+</html>

@@ -1,5 +1,9 @@
 # APEDA Exporter's Directory (unofficial search tool)
 
+<!-- how-to-use-with-ai -->
+> **New here?** See [How to use this repo with AI (Claude, Gemini, ChatGPT)](HOW_TO_USE_WITH_AI.md) — clone it, paste it into an AI tool, and ask in plain English.
+
+
 A small local Flask app that searches APEDA's public exporter directory
 (https://apeda.gov.in/exporter-directory) by **state**, **product**,
 **exporter type**, **name**, and a free-text **city/district** filter,

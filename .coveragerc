@@ -1,0 +1,5 @@
+[run]
+source = app, export_south_india
+omit =
+    tests/*
+    */conftest.py

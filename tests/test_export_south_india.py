@@ -82,7 +82,8 @@ def test_main_dedupes_by_rcmc_and_writes_columns(monkeypatch, tmp_path, capsys):
     assert [c for c, _ in asked] == ["AP", "TG", "KA", "KE", "TN", "PY"]
     rows = list(csv.DictReader((tmp_path / "south_india_exporters.csv").open(encoding="utf-8")))
     assert [r["exporter_name"] for r in rows] == ["A", "B", "C, Inc", "N1"]       # R1 dup dropped; second None key dropped too
-    assert list(rows[0]) == ex.COLS and rows[0]["address"] == "" and "extra" not in rows[0]
+    assert list(rows[0]) == ["rcmcno", "exporter_name", "keyPerson", "address", "city", "state", "pin", "email", "mobile",
+                                                      "expType", "expStatus", "qtyinMT", "valueinRsCrore"] and rows[0]["address"] == "" and "extra" not in rows[0]
     err = capsys.readouterr().err
     assert "Total unique exporters: 4" in err and "Written to south_india_exporters.csv" in err
 

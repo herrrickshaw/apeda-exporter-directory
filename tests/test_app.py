@@ -57,6 +57,11 @@ def test_get_states_fetches_once_and_caches(posts):
     assert posts.calls[0] == (appmod.API_BASE + "/ExporterDirectory_state", {"qType": "7"}, 30)
 
 
+def test_get_states_missing_table_is_empty(posts):
+    posts.behaviour["ExporterDirectory_state"] = Resp({"other": 1})
+    assert appmod.get_states() == []
+
+
 def test_get_products_payload_and_missing_table(posts):
     posts.behaviour["ExporterDirectory_product"] = Resp({})
     assert appmod.get_products() == []
